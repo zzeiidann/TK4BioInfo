@@ -42,21 +42,37 @@ class AlignmentResult:
         )
     
     def plot(self, width: int = 80) -> None:
-        """Display alignment with match indicators"""
-        print(f"\n{self}")
-        print("=" * min(width, len(self.seq1_aligned)))
+        """
+        Display alignment with match indicators
+        Format matches R Bioconductor pwalign output style
+        """
+        lines = []
         
-        for i in range(0, len(self.seq1_aligned), width):
-            chunk1 = self.seq1_aligned[i:i+width]
-            chunk2 = self.seq2_aligned[i:i+width]
-            match = self.match_string[i:i+width]
+        # Add header
+        lines.append("")
+        lines.append("Global PairwiseAlignmentsSingleSubject (1 of 1)")
+        lines.append(f"pattern: [{self.start1}] {self.seq1_original}")
+        lines.append(f"subject: [{self.start2}] {self.seq2_original}")
+        lines.append(f"score: {self.score}")
+        lines.append("")
+        
+        # Format alignment in blocks
+        for start in range(0, len(self.seq1_aligned), width):
+            a_block = self.seq1_aligned[start:start+width]
+            b_block = self.seq2_aligned[start:start+width]
             
-            print(f"\nPosition {i+1}-{min(i+width, len(self.seq1_aligned))}")
-            print(f"Seq1: {chunk1}")
-            print(f"      {match}")
-            print(f"Seq2: {chunk2}")
+            # Create match string with proper formatting
+            m_block = "".join(" " if x == " " else "|" if x == "|" else "." 
+                             for x in self.match_string[start:start+width])
+            
+            lines.append(f"pattern: {a_block}")
+            lines.append(f"         {m_block}")
+            lines.append(f"subject: {b_block}")
+            lines.append("")  # Blank line between blocks
         
-        print("=" * min(width, len(self.seq1_aligned)))
+        # Print all lines
+        for line in lines:
+            print(line)
     
     def view(self, width: int = 80) -> None:
         """Alias for plot method"""

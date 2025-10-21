@@ -1,0 +1,12 @@
+"""
+Phylogenetic Analysis Module
+Tools for phylogenetic tree construction and analysis (Coming Soon)
+"""
+
+__version__ = "0.1.0"
+
+# Future imports will go here
+# from .tree import PhylogeneticTree
+# from .distance import DistanceMatrix
+
+__all__ = []

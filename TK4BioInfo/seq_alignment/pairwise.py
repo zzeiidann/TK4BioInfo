@@ -50,24 +50,33 @@ class AlignmentResult:
         
         # Add header
         lines.append("")
-        lines.append("Global PairwiseAlignmentsSingleSubject (1 of 1)")
-        lines.append(f"pattern: [{self.start1}] {self.seq1_original}")
-        lines.append(f"subject: [{self.start2}] {self.seq2_original}")
-        lines.append(f"score: {self.score}")
+        lines.append(f"Sequence 1: {self.seq1_original}")
+        lines.append(f"Sequence 2: {self.seq2_original}")
+
+        lines.append("")
+        lines.append(f"Type: {self.alignment_type}")
+        lines.append(f"Identity: {self.identity:.2%}")
+        lines.append(f"Similarity: {self.similarity:.2%}")
+        lines.append(f"Gaps: {self.gaps}")
+
+        lines.append("")
+        lines.append(f"Score: {self.score}")
         lines.append("")
         
         # Format alignment in blocks
         for start in range(0, len(self.seq1_aligned), width):
-            a_block = self.seq1_aligned[start:start+width]
-            b_block = self.seq2_aligned[start:start+width]
+            end = min(start + width, len(self.seq1_aligned))
+            a_block = self.seq1_aligned[start:end]
+            b_block = self.seq2_aligned[start:end]
+            m_block = self.match_string[start:end]
             
             # Create match string with proper formatting
-            m_block = "".join(" " if x == " " else "|" if x == "|" else "." 
-                             for x in self.match_string[start:start+width])
+            match_display = "".join(" " if x == " " else "|" if x == "|" else "." 
+                            for x in m_block)
             
-            lines.append(f"pattern: {a_block}")
-            lines.append(f"         {m_block}")
-            lines.append(f"subject: {b_block}")
+            lines.append(f"Sequence 1: {a_block}")
+            lines.append(f"            {match_display}")
+            lines.append(f"Sequence 2: {b_block}")
             lines.append("")  # Blank line between blocks
         
         # Print all lines

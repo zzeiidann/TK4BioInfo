@@ -1,12 +1,83 @@
 """
-Phylogenetic Analysis Module
-Tools for phylogenetic tree construction and analysis (Coming Soon)
+PhyloGene - Python Phylogenetic Analysis Library
+Inspired by R's ape and phangorn packages
+
+Features:
+- UPGMA (Unweighted Pair Group Method with Arithmetic Mean)
+- Neighbor-Joining (NJ)
+- Maximum Likelihood (ML)
+- Maximum Parsimony (MP)
+- Tree reading/writing (Newick format)
+- Tree plotting and visualization
+- DNA distance calculations
+- Async support for faster computation
 """
 
-__version__ = "0.1.0"
+from .tree_builder import (
+    UPGMA,
+    NeighborJoining,
+    MaximumLikelihood,
+    MaximumParsimony
+)
 
-# Future imports will go here
-# from .tree import PhylogeneticTree
-# from .distance import DistanceMatrix
+from .tree_io import (
+    read_tree,
+    write_tree,
+    parse_newick,
+    to_newick
+)
 
-__all__ = []
+from .tree_plot import plot_tree, plot_phylo
+
+from .distances import (
+    compute_distance_matrix,
+    compute_distance_matrix_async,
+    raw_distance,
+    p_distance,
+    jukes_cantor_distance,
+    kimura_distance
+)
+
+from .tree_utils import (
+    bootstrap_tree,
+    bootstrap_tree_async,
+    consensus_tree,
+    root_tree,
+    ladderize,
+    compute_branch_support
+)
+
+__version__ = "1.0.0"
+__all__ = [
+    # Tree construction methods
+    "UPGMA",
+    "NeighborJoining",
+    "MaximumLikelihood",
+    "MaximumParsimony",
+    
+    # I/O functions
+    "read_tree",
+    "write_tree",
+    "parse_newick",
+    "to_newick",
+    
+    # Plotting
+    "plot_tree",
+    "plot_phylo",
+    
+    # Distance calculations
+    "compute_distance_matrix",
+    "compute_distance_matrix_async",
+    "raw_distance",
+    "p_distance",
+    "jukes_cantor_distance",
+    "kimura_distance",
+    
+    # Tree utilities
+    "bootstrap_tree",
+    "bootstrap_tree_async",
+    "consensus_tree",
+    "root_tree",
+    "ladderize",
+    "compute_branch_support"
+]

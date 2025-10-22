@@ -356,9 +356,6 @@ class MaximumLikelihood:
         return node
 
 
-# =========================
-# Async builder helper
-# =========================
 async def build_tree_async(method: str, data: Union[np.ndarray, Dict],
                            taxa_names: Optional[List[str]] = None) -> TreeNode:
     loop = asyncio.get_event_loop()

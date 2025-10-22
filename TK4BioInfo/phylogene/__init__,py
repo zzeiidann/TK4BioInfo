@@ -49,7 +49,8 @@ from .tree_utils import (
 
 from .msa import (
     build_msa,
-    build_msa_async
+    build_msa_async,
+    progressive_msa
 )
 
 __version__ = "1.0.0"
@@ -90,4 +91,5 @@ __all__ = [
     "build_msa",
     "build_msa_async"
 
+    "progressive_msa",
 ]

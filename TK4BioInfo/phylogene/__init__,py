@@ -47,6 +47,11 @@ from .tree_utils import (
     compute_branch_support
 )
 
+from .msa import (
+    build_msa,
+    build_msa_async
+)
+
 __version__ = "1.0.0"
 __all__ = [
     # Tree construction methods
@@ -79,5 +84,10 @@ __all__ = [
     "consensus_tree",
     "root_tree",
     "ladderize",
-    "compute_branch_support"
+    "compute_branch_support",
+
+    # MSA functions
+    "build_msa",
+    "build_msa_async"
+
 ]

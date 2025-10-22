@@ -508,12 +508,20 @@ class PairwiseAligner:
         aligned2: str
     ) -> Tuple[float, float, int]:
         """Calculate alignment statistics"""
+        # Matches: exact base matches (excluding gaps)
         matches = sum(1 for a, b in zip(aligned1, aligned2) if a == b and a != '-')
-        similar = sum(1 for a, b in zip(aligned1, aligned2) if a != '-' and b != '-')
+        
+        # Non-gap positions (alignment columns without gaps)
+        non_gap_positions = sum(1 for a, b in zip(aligned1, aligned2) if a != '-' and b != '-')
+        
+        # Gaps total
         gaps = aligned1.count('-') + aligned2.count('-')
         
-        identity = matches / len(aligned1) if len(aligned1) > 0 else 0
-        similarity = similar / len(aligned1) if len(aligned1) > 0 else 0
+        # Identity: matches / non-gap positions (R formula)
+        identity = matches / non_gap_positions if non_gap_positions > 0 else 0
+        
+        # Similarity: same as identity for nucleotides (no positive scores concept)
+        similarity = identity
         
         return identity, similarity, gaps
     
@@ -559,6 +567,7 @@ class PairwiseAligner:
             print(f"Sequence 2: {seq2_original}")
             print(f"Mode: {mode}")
             print(f"Gap opening: {self.gap_opening}, Gap extension: {self.gap_extension}")
+            print(f"Using: {'Quality-based scoring' if self.use_quality_scoring else 'BLOSUM62'}")
             print("="*70)
             print("\nInitializing alignment matrices...")
         
@@ -627,7 +636,7 @@ def pairwise(
     gap_opening: float = None,
     gap_extension: float = None,
     mode: Literal["global", "local"] = "local",
-    substitution_matrix: str = "BLOSUM62",  # FORCE BLOSUM62 BY DEFAULT
+    substitution_matrix: str = "BLOSUM62",
     verbose: bool = False
 ) -> AlignmentResult:
     """
@@ -648,13 +657,13 @@ def pairwise(
     seq2 : str
         Second sequence (subject)
     gap_opening : float, optional
-        Gap opening penalty (auto-set based on mode if None)
+        Gap opening penalty (auto-set to 10 if None)
     gap_extension : float, optional
-        Gap extension penalty (auto-set based on mode if None)
+        Gap extension penalty (auto-set: 0.5 for local, 4 for global)
     mode : str
         "local" or "global" (default "local")
     substitution_matrix : str
-        "BLOSUM62" (default, matches your R code!) or None for quality-based
+        "BLOSUM62" (default, matches your R code!)
     verbose : bool
         Show progress (default False)
     
@@ -665,17 +674,13 @@ def pairwise(
     
     Examples:
     ---------
-    >>> # Just like YOUR R code with BLOSUM62!
+    >>> # Local alignment (auto gap_extension=0.5)
     >>> result = pairwise("ACGTGGTT", "GCTTTTGTA", mode="local")
     >>> result.view()
     >>> 
-    >>> # Global alignment
+    >>> # Global alignment (auto gap_extension=4)
     >>> result = pairwise("ACGTGGTT", "GCTTTTGTA", mode="global")
     >>> result.view()
-    >>> 
-    >>> # Access score and matches
-    >>> print(result.score)
-    >>> print(result.nmatch())
     """
     # Auto-configure gap penalties to match R defaults
     if gap_opening is None:
@@ -686,6 +691,9 @@ def pairwise(
             gap_extension = 0.5  # R default for local
         else:
             gap_extension = 4.0  # R default for global
+    
+    if verbose:
+        print(f"DEBUG: mode={mode}, gap_opening={gap_opening}, gap_extension={gap_extension}")
     
     # Use BLOSUM62 like your R code does!
     use_quality = (substitution_matrix != "BLOSUM62")

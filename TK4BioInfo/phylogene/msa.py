@@ -221,18 +221,26 @@ def _build_merged_profile(profA, profB, alnA_cols, alnB_cols, is_protein):
 def _profile_profile_align_banded(profA, profB, gap_open, gap_ext, mode, backend, band_width, verbose):
     """BANDED ALIGNMENT WITH VERBOSE"""
     xp = _get_xp(backend)
+    
+    if verbose and backend == "gpu":
+        if _HAS_CUPY:
+            print(f"      [GPU MODE ACTIVE - CuPy]")
+        else:
+            print(f"      [GPU requested but CuPy not available, using CPU]")
+    
     freqsA, alphA = profA.to_column_freqs()
     freqsB, alphB = profB.to_column_freqs()
     L1, L2 = freqsA.shape[0], freqsB.shape[0]
     is_protein = profA.is_protein or profB.is_protein
     
     if verbose:
-        print(f"      Column scores...", end=" ", flush=True)
+        print(f"      Computing column scores...", end=" ", flush=True)
     
     S = _column_score_matrix(freqsA, alphA, freqsB, alphB, is_protein, xp)
     
     if verbose:
-        print(f"DP matrix ({L1}x{L2}, band={band_width})...", flush=True)
+        print(f"done")
+        print(f"      Filling DP matrix ({L1}x{L2}, band={band_width})...", flush=True)
     
     NEG = -1e9
     band = band_width
@@ -254,10 +262,13 @@ def _profile_profile_align_banded(profA, profB, gap_open, gap_ext, mode, backend
         Y[(0, j)] = -(gap_open + (j - 1) * gap_ext) if mode == "global" else 0.0
         TB[(0, j)] = 2
     
+    # Progress tracking
+    report_interval = 1000 if L1 > 5000 else 500
+    
     for i in range(1, L1 + 1):
-        if verbose and L1 > 10000 and i % 5000 == 0:
+        if verbose and i % report_interval == 0:
             pct = (i / L1) * 100
-            print(f"      [{pct:5.1f}%] row {i}/{L1}", flush=True)
+            print(f"      [{pct:5.1f}%] row {i:,}/{L1:,}", flush=True)
         
         j_min = max(1, i - band)
         j_max = min(L2 + 1, i + band + 1)
@@ -297,7 +308,7 @@ def _profile_profile_align_banded(profA, profB, gap_open, gap_ext, mode, backend
                 TB[(i, j)] = 2
     
     if verbose:
-        print(f"      Traceback...", end=" ", flush=True)
+        print(f"      [100.0%] DP complete! Starting traceback...", flush=True)
     
     i, j = L1, L2
     alnA_cols, alnB_cols = [], []
@@ -338,7 +349,7 @@ def _profile_profile_align_banded(profA, profB, gap_open, gap_ext, mode, backend
     alnB_cols.reverse()
     
     if verbose:
-        print("done", flush=True)
+        print(f"      Traceback complete, building sequences...", flush=True)
     
     return _build_merged_profile(profA, profB, alnA_cols, alnB_cols, is_protein)
 
